@@ -127,3 +127,51 @@ body{background:radial-gradient(circle at 8% 12%,rgba(112,192,240,.30),transpare
 /* Stable interactive drawers: never move clickable targets during open/close. */
 .connect-panel,.explore-panel{transform:none!important;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s ease!important}
 .connect-panel.open,.explore-panel.open{transform:none!important;opacity:1;visibility:visible;pointer-events:auto}
+
+/* Learner Preview 2: phone ergonomics and readable metadata. */
+button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{
+  outline:3px solid rgba(16,80,192,.28);
+  outline-offset:2px;
+}
+@media(max-width:700px){
+  .page-nav{height:46px}
+  .page-nav button{width:46px;min-width:46px;height:46px}
+  .page-nav input{width:58px;height:44px;font-size:14px}
+  .rail{height:60px;padding:7px 8px;gap:5px}
+  .rail-btn{width:44px;height:44px;border-radius:14px}
+  .rail-btn b{font-size:10px}
+  .icon-btn{width:44px;height:44px;min-width:44px}
+  .panel-head small{font-size:11px}
+  .panel-head p{font-size:12px}
+  .carousel-bar{height:64px;padding:0 12px}
+  .carousel-bar>div:first-child{gap:7px}
+  .carousel-bar span{font-size:12px}
+  .dots{gap:0}
+  .dot{position:relative;width:28px;height:28px;border-radius:50%;background:transparent!important}
+  .dot::after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:#cbd8df;transform:translate(-50%,-50%)}
+  .dot.active::after{background:var(--ncert-blue);box-shadow:0 0 0 3px rgba(16,80,192,.11)}
+  .highlight-source{height:44px;min-height:44px;padding:0 12px;font-size:12px}
+  .carousel-arrows{gap:4px}
+  .carousel-arrows button{width:44px;height:44px;border-radius:12px}
+  .q-meta{gap:6px;margin-bottom:13px}
+  .pill{font-size:11px;padding:6px 9px}
+  .paper-kicker{font-size:11px;line-height:1.45}
+  .attempt-label,.word-row{font-size:12px}
+  .mapping-card h3{font-size:12px}
+  .mapping-card p{font-size:13px}
+  .secondary-btn{min-height:44px;padding:10px 12px;font-size:12px}
+  .proof summary{font-size:12px;min-height:28px;display:flex;align-items:center}
+  .proof p{font-size:11px}
+  .trace-note{font-size:12px}
+  .trace-source-chip{font-size:10px;padding:4px 8px}
+  .trace-pages>span{font-size:10px}
+  .trace-page-chip{min-height:32px;padding:6px 10px;font-size:11px}
+  .explore-head small{font-size:11px}
+  .explore-tools input{height:46px;font-size:14px}
+  .resume-question{height:44px;font-size:12px}
+  .question-index-item{padding:13px}
+  .question-index-meta{font-size:12px}
+  .question-index-item>strong{font-size:15px;line-height:1.42}
+  .question-index-foot{font-size:11px}
+}
+
