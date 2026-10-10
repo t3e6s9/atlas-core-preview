@@ -477,6 +477,9 @@ function jumpToEvidencePage(q,pageNo){
   if(!pageIndexByNumber.has(pageNo)) return;
   const hasEvidence=(q.graph?.edges||[]).some(edge=>Number(sourceAtomsById[edge.source_atom]?.page)===pageNo);
   if(!hasEvidence) return;
+  // The native details toggle event can arrive after a quick page-chip click.
+  // Read the expanded DOM state synchronously before replacing the question card.
+  state.expandedTraceId=$('traceEvidenceDetails')?.open ? q.id : null;
   state.page=pageNo; state.highlight=q.id;
   if(pageNo===Number(q.page)){
     state.pinned=null;

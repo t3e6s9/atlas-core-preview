@@ -1,2 +1,2 @@
-self.ATLAS_BUILD_ID = "atlas-core-8c1e6474847c";
+self.ATLAS_BUILD_ID = "atlas-core-2be4ab602cbb";
 importScripts('./sw-assets.js','./sw-runtime.js');
