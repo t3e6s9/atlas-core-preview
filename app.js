@@ -47,7 +47,7 @@ function loadProgress(){
   }catch{return {page:defaultPage,attempts:{},lastQuestionId:null};}
 }
 const savedProgress=loadProgress();
-const state = { page:savedProgress.page, layout:'one', fit:'width', zoom:1, panel:false, explorer:false, q:0, attempts:savedProgress.attempts, highlight:null, pinned:null, lastQuestionId:savedProgress.lastQuestionId };
+const state = { page:savedProgress.page, layout:'one', fit:'width', zoom:1, panel:false, explorer:false, q:0, attempts:savedProgress.attempts, highlight:null, pinned:null, expandedTraceId:null, lastQuestionId:savedProgress.lastQuestionId };
 const readerStage=$('readerStage'), workspace=$('workspace'), panel=$('connectPanel'), card=$('questionCard'), reader=$('reader');
 const explorePanel=$('explorePanel'), questionList=$('questionList'), questionSearch=$('questionSearch');
 function currentQuestions(){ return questions.filter(q=>Number(q.page)===state.page); }
@@ -139,7 +139,7 @@ function renderEvidence(){
 }
 
 function setPage(page){
-  state.page=normalizePage(page); state.q=0; state.highlight=null; state.pinned=null;
+  state.page=normalizePage(page); state.q=0; state.highlight=null; state.pinned=null; state.expandedTraceId=null;
   renderReader(); syncMobileSourceFocus(); $('reader').scrollTo({top:0,left:0,behavior:'instant'}); persistProgress();
 }
 
@@ -226,17 +226,31 @@ function traceMarkup(q){
   const seen=new Set();
   const chips=[];
   const evidencePages=[];
+  const demands=new Map((q.graph?.question_atoms||[]).map(a=>[a.id,a]));
+  const byDemand=new Map();
   (q.graph?.edges||[]).forEach(edge=>{
     const atom=sourceAtomsById[edge.source_atom]; if(!atom) return;
     if(!evidencePages.includes(Number(atom.page))) evidencePages.push(Number(atom.page));
-    const role=edge.role==='context'?'Related':edge.role[0].toUpperCase()+edge.role.slice(1);
-    const kind=(atom.kind||'source');
-    const key=`${kind}:${role}`; if(seen.has(key)) return; seen.add(key);
-    chips.push(`<span class="trace-source-chip ${escapeHtml(edge.role)}">${escapeHtml(kind[0].toUpperCase()+kind.slice(1))} · ${escapeHtml(role)}</span>`);
+    const role=edge.role==='context'?'Related context':edge.role[0].toUpperCase()+edge.role.slice(1);
+    const kind=atom.kind||'source';
+    const key=`${kind}:${role}`;
+    if(!seen.has(key)){
+      seen.add(key);
+      chips.push(`<span class="trace-source-chip ${escapeHtml(edge.role)}">${escapeHtml(kind[0].toUpperCase()+kind.slice(1))} · ${escapeHtml(role)}</span>`);
+    }
+    if(!byDemand.has(edge.question_atom)) byDemand.set(edge.question_atom,[]);
+    const limit={sufficient:'Sufficient for this part',partial:'Partial for this part',insufficient:'Not enough by itself'}[edge.sufficiency]||edge.sufficiency;
+    byDemand.get(edge.question_atom).push(`<div class="trace-evidence-row" data-evidence-demand="${escapeHtml(edge.question_atom)}"><div class="trace-evidence-row-meta"><span class="trace-evidence-role ${escapeHtml(edge.role)}">${escapeHtml(role)}</span><span>p. ${escapeHtml(atom.page)} · ${escapeHtml(kind)} · ${escapeHtml(limit)}</span></div><strong>${escapeHtml(atom.label)}</strong><p>${escapeHtml(edge.rationale)}</p></div>`);
   });
+  const demandRows=[...byDemand].map(([id,rows])=>{
+    const demand=demands.get(id);
+    return `<section class="trace-demand"><h4>${escapeHtml(demand?.text||id)}</h4>${rows.join('')}</section>`;
+  }).join('');
+  const edgeCount=[...byDemand.values()].reduce((n,rows)=>n+rows.length,0);
+  const details=edgeCount?`<details class="trace-evidence-details" id="traceEvidenceDetails" ${state.expandedTraceId===q.id?'open':''}><summary>Inspect evidence by question demand · ${edgeCount} links</summary><div class="trace-evidence-body"><p class="trace-evidence-caution">Each role describes one audited source-to-question link, not proof of the whole answer.</p>${demandRows}</div></details>`:'';
   evidencePages.sort((a,b)=>(pageIndexByNumber.get(a)??9999)-(pageIndexByNumber.get(b)??9999));
   const pageChips=evidencePages.map(p=>`<button class="trace-page-chip ${p===state.page?'active':''}" data-evidence-page="${p}">p. ${p}</button>`).join('');
-  return `<div class="trace-note ${q.traceLevel||'direct'}"><strong>Source trace</strong><div><span>${escapeHtml(q.traceNote||'')}</span>${chips.length?`<div class="trace-source-kinds">${chips.join('')}</div>`:''}${evidencePages.length>1?`<div class="trace-pages"><span>Evidence pages</span>${pageChips}</div>`:''}</div></div>`;
+  return `<div class="trace-note ${q.traceLevel||'direct'}"><strong>Source trace</strong><div><span>${escapeHtml(q.traceNote||'')}</span>${chips.length?`<div class="trace-source-kinds">${chips.join('')}</div>`:''}${evidencePages.length>1?`<div class="trace-pages"><span>Evidence pages</span>${pageChips}</div>`:''}${details}</div></div>`;
 }
 
 function attemptMarkup(q,a){
@@ -263,6 +277,7 @@ function bindQuestionEvents(q,a){
   const ret=$('returnSource'); if(ret) ret.onclick=()=>{ setPanel(false); document.querySelector(`.page-shell[data-page="${q.page}"]`)?.scrollIntoView({behavior:'smooth',block:'center'}); };
   document.querySelectorAll('.dot').forEach(d=>d.onclick=()=>{state.q=Number(d.dataset.i); renderQuestion();});
   document.querySelectorAll('[data-evidence-page]').forEach(b=>b.onclick=()=>jumpToEvidencePage(q,Number(b.dataset.evidencePage)));
+  const details=$('traceEvidenceDetails'); if(details) details.addEventListener('toggle',()=>{state.expandedTraceId=details.open?q.id:null;});
 }
 function moveQuestion(dir){
   const qs=panelQuestions(); if(qs.length<2) return;
