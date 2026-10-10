@@ -203,6 +203,12 @@ function renderQuestion(){
   const meta=`<div class="q-meta"><span class="pill year">${escapeHtml(q.year)}</span><span class="pill">${escapeHtml(q.kind)}</span>${q.meta?`<span class="pill">${escapeHtml(q.meta)}</span>`:''}<span class="pill support">${escapeHtml(q.support)}</span></div>`;
   card.innerHTML=meta+questionMarkup(q)+(state.highlight===q.id?traceMarkup(q):'')+attemptMarkup(q,a)+(a.done?reviewMarkup(q,a):'');
   bindQuestionEvents(q,a);
+  // Reading a question counts as the latest resume target, even before submission.
+  // Never replace that target when rendering a closed panel in the background.
+  if(state.panel && state.lastQuestionId!==q.id){
+    state.lastQuestionId=q.id;
+    persistProgress();
+  }
   updateEvidenceControl(); syncMobileSourceFocus();
 }
 
