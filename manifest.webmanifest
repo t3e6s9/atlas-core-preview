@@ -1,0 +1,9 @@
+{
+  "name": "ATLAS Core",
+  "short_name": "ATLAS",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f4f1",
+  "theme_color": "#f4f4f1",
+  "description": "Exact source → exact UPSC question → attempt → evidence."
+}

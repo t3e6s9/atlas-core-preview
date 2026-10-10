@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#102040">
+  <title>ATLAS Core</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="identity"><strong>ATLAS</strong><i></i><span id="sourceIdentity">Exact source</span></div>
+    <div class="page-nav" aria-label="Page navigation">
+      <button id="prevPage" aria-label="Previous page">‹</button>
+      <input id="pageInput" inputmode="numeric" value="83" aria-label="Printed page">
+      <button id="nextPage" aria-label="Next page">›</button>
+    </div>
+    <div class="source-state"><span></span>Exact source · local</div>
+  </header>
+  <main class="workspace" id="workspace">
+    <section class="reader" id="reader" aria-label="Exact source reader">
+      <div class="reader-stage fit-width" id="readerStage"></div>
+    </section>
+    <div class="rail-hotzone" id="railHotzone" aria-hidden="true"></div>
+    <nav class="rail" aria-label="Reader controls">
+      <button class="rail-btn active" data-action="connect" title="Connect"><span>⌘</span><b id="connectBadge">2</b></button>
+      <button class="rail-btn" data-action="explore" id="exploreBtn" title="Browse audited questions" aria-label="Browse audited questions"><span aria-hidden="true">Q</span><b id="exploreBadge">0</b></button>
+      <em></em>
+      <button class="rail-btn" data-action="layout" title="Reader layout" aria-label="Reader layout"><span>◫</span></button>
+      <button class="rail-btn mobile-read-zoom" id="mobileReadZoom" title="Enlarge page to read a column" aria-label="Enlarge page to read a column" aria-pressed="false"><span aria-hidden="true">Aa+</span></button>
+      <button class="rail-btn" data-action="more" title="More"><span>•••</span></button>
+    </nav>
+    <aside class="connect-panel" id="connectPanel" aria-hidden="true">
+      <header class="panel-head">
+        <div><small>CONNECT</small><h1>UPSC questions · p. <span id="panelPage">83</span></h1><p>Trace the source anytime. Answer/review appears after submission.</p></div>
+        <button id="panelClose" class="icon-btn" aria-label="Close">×</button>
+      </header>
+      <div class="carousel-bar">
+        <div><span id="questionCount">1 of 2</span><div id="dots" class="dots"></div></div>
+        <div class="carousel-tools"><button id="highlightSource" class="highlight-source" title="Toggle the NCERT source trace for this question">▰ <span>Trace source</span></button><div class="carousel-arrows"><button id="qPrev" aria-label="Previous question">←</button><button id="qNext" aria-label="Next question">→</button></div></div>
+      </div>
+      <div class="carousel-viewport" id="carouselViewport">
+        <article class="question-card" id="questionCard"></article>
+      </div>
+    </aside>
+    <aside class="explore-panel" id="explorePanel" aria-hidden="true">
+      <header class="explore-head">
+        <div><small>QUESTION INDEX</small><h1>Find a UPSC question</h1><p id="progressSummary">Audited questions across this source slice.</p></div>
+        <button id="exploreClose" class="icon-btn" aria-label="Close question index">×</button>
+      </header>
+      <div class="explore-tools">
+        <input id="questionSearch" type="search" autocomplete="off" placeholder="Search topic, year, page…" aria-label="Search audited questions">
+        <button id="resumeQuestion" class="resume-question" hidden></button>
+      </div>
+      <div class="explore-list" id="questionList"></div>
+    </aside>
+    <div class="layout-pop" id="layoutPop" hidden>
+      <small>PAGE LAYOUT</small>
+      <div class="layout-grid"><button data-layout="one">▯ One page</button><button data-layout="two">▯▯ Two pages</button></div>
+      <div class="layout-grid"><button data-fit="width">Reading width</button><button data-fit="page">Fit screen</button></div><p class="layout-hint">One-page view scrolls naturally from top to bottom.</p>
+      <div class="zoom-row"><button id="zoomOut">−</button><span id="zoomLabel">100%</span><button id="zoomIn">+</button></div>
+    </div>
+    <div class="more-pop" id="morePop" hidden>
+      <strong>ATLAS Core v0.6</strong>
+      <span>Exact source → real question → trace anytime → review after attempt.</span>
+      <span class="muted" id="sourceRange">Exact source slice</span>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+  </main>
+</div>
+<script src="atlas-data.js"></script>
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>
