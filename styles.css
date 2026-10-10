@@ -198,3 +198,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
   .trace-evidence-row-meta{font-size:12px}
 }
 
+/* Preview 5: show unlinked demands, with detailed gaps only after submission. */
+.trace-demand.unlinked{border:1px solid #dddfdf;background:#faf9f6;border-radius:9px;padding:10px}
+.trace-unlinked{margin:0;color:#735c37;font-size:12px;line-height:1.5}
+.review-demand-gaps{border:1px solid #e2d6bd;border-radius:10px;margin:12px 0;background:#fffdfa;overflow:hidden}
+.review-demand-gaps>summary{cursor:pointer;min-height:44px;box-sizing:border-box;padding:12px;font-size:12px;font-weight:750;color:#715027}
+.review-demand-list{padding:4px 12px 14px;display:grid;gap:10px}
+.review-demand-gap{border-left:3px solid #d5a86c;padding:8px 10px;background:#fff8ed;border-radius:0 7px 7px 0}
+.review-demand-gap strong{display:block;font-size:12px;line-height:1.5}
+.review-demand-gap p{margin:5px 0 0;font-size:12px;line-height:1.55;color:#5b4c3a}
+@media(max-width:700px){
+  .trace-unlinked,.review-demand-gap p,.review-demand-gap strong{font-size:13px}
+  .review-demand-gaps>summary{font-size:13px}
+}
+

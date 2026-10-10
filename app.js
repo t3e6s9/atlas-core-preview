@@ -226,7 +226,6 @@ function traceMarkup(q){
   const seen=new Set();
   const chips=[];
   const evidencePages=[];
-  const demands=new Map((q.graph?.question_atoms||[]).map(a=>[a.id,a]));
   const byDemand=new Map();
   (q.graph?.edges||[]).forEach(edge=>{
     const atom=sourceAtomsById[edge.source_atom]; if(!atom) return;
@@ -242,12 +241,14 @@ function traceMarkup(q){
     const limit={sufficient:'Sufficient for this part',partial:'Partial for this part',insufficient:'Not enough by itself'}[edge.sufficiency]||edge.sufficiency;
     byDemand.get(edge.question_atom).push(`<div class="trace-evidence-row" data-evidence-demand="${escapeHtml(edge.question_atom)}"><div class="trace-evidence-row-meta"><span class="trace-evidence-role ${escapeHtml(edge.role)}">${escapeHtml(role)}</span><span>p. ${escapeHtml(atom.page)} · ${escapeHtml(kind)} · ${escapeHtml(limit)}</span></div><strong>${escapeHtml(atom.label)}</strong><p>${escapeHtml(edge.rationale)}</p></div>`);
   });
-  const demandRows=[...byDemand].map(([id,rows])=>{
-    const demand=demands.get(id);
-    return `<section class="trace-demand"><h4>${escapeHtml(demand?.text||id)}</h4>${rows.join('')}</section>`;
+  const questionDemands=q.graph?.question_atoms||[];
+  const demandRows=questionDemands.map(demand=>{
+    const id=demand.id, rows=byDemand.get(id)||[];
+    return `<section class="trace-demand ${rows.length?'linked':'unlinked'}" data-question-demand="${escapeHtml(id)}"><h4>${escapeHtml(demand.text)}</h4>${rows.length?rows.join(''):'<p class="trace-unlinked">No verified source link for this question part in these audited pages.</p>'}</section>`;
   }).join('');
   const edgeCount=[...byDemand.values()].reduce((n,rows)=>n+rows.length,0);
-  const details=edgeCount?`<details class="trace-evidence-details" id="traceEvidenceDetails" ${state.expandedTraceId===q.id?'open':''}><summary>Inspect evidence by question demand · ${edgeCount} links</summary><div class="trace-evidence-body"><p class="trace-evidence-caution">Each role describes one audited source-to-question link, not proof of the whole answer.</p>${demandRows}</div></details>`:'';
+  const linkedDemands=questionDemands.filter(d=>byDemand.has(d.id)).length;
+  const details=questionDemands.length?`<details class="trace-evidence-details" id="traceEvidenceDetails" ${state.expandedTraceId===q.id?'open':''}><summary>Inspect question coverage · ${linkedDemands} of ${questionDemands.length} parts linked · ${edgeCount} evidence links</summary><div class="trace-evidence-body"><p class="trace-evidence-caution">A linked part is not necessarily answered. Direct, bridge, and context edges may be partial.</p>${demandRows}</div></details>`:'';
   evidencePages.sort((a,b)=>(pageIndexByNumber.get(a)??9999)-(pageIndexByNumber.get(b)??9999));
   const pageChips=evidencePages.map(p=>`<button class="trace-page-chip ${p===state.page?'active':''}" data-evidence-page="${p}">p. ${p}</button>`).join('');
   return `<div class="trace-note ${q.traceLevel||'direct'}"><strong>Source trace</strong><div><span>${escapeHtml(q.traceNote||'')}</span>${chips.length?`<div class="trace-source-kinds">${chips.join('')}</div>`:''}${evidencePages.length>1?`<div class="trace-pages"><span>Evidence pages</span>${pageChips}</div>`:''}${details}</div></div>`;
@@ -261,9 +262,16 @@ function attemptMarkup(q,a){
   const wc=(a.text.trim().match(/\S+/g)||[]).length;
   return `<section class="attempt"><div class="attempt-label">Write your answer</div><textarea class="answer-box" id="mainsAnswer" placeholder="Answer here…" ${a.done?'disabled':''}>${escapeHtml(a.text)}</textarea><div class="word-row"><span>${escapeHtml(q.meta)}</span><span id="wordCount">${wc} words</span></div><button class="primary-btn" id="finishAttempt" ${!a.text.trim()||a.done?'disabled':''}>${a.done?'Attempt finished':'Finish attempt'}</button></section>`;
 }
+function reviewGapsMarkup(q){
+  const gaps=q.graph?.gaps||[];
+  if(!gaps.length) return '';
+  const demands=new Map((q.graph?.question_atoms||[]).map(d=>[d.id,d.text]));
+  const items=gaps.map(g=>`<div class="review-demand-gap" data-review-demand="${escapeHtml(g.question_atom)}"><strong>${escapeHtml(demands.get(g.question_atom)||g.question_atom)}</strong><p>${escapeHtml(g.missing)}</p></div>`).join('');
+  return `<details class="review-demand-gaps"><summary>Missing knowledge by question part · ${gaps.length}</summary><div class="review-demand-list">${items}</div></details>`;
+}
 function reviewMarkup(q,a){
   const verdict=q.type==='prelims' ? `<strong>${a.choice===q.correct?'Correct':'Incorrect'} · official answer ${q.correct}</strong>` : '<strong>Attempt captured</strong>';
-  return `<section class="review"><div class="result-line">${verdict}<span class="status-tag">${escapeHtml(q.support)}</span></div><div class="mapping-card"><h3>What this source page gives</h3><p>${escapeHtml(q.gives)}</p></div><div class="mapping-card"><h3>What is still required</h3><p>${escapeHtml(q.missing)}</p></div><div class="mapping-actions"><button class="secondary-btn" id="returnSource">Return to page</button></div><details class="proof"><summary>Source proof</summary><p>${escapeHtml(q.proof)}</p></details></section>`;
+  return `<section class="review"><div class="result-line">${verdict}<span class="status-tag">${escapeHtml(q.support)}</span></div><div class="mapping-card"><h3>What this source page gives</h3><p>${escapeHtml(q.gives)}</p></div><div class="mapping-card"><h3>What is still required</h3><p>${escapeHtml(q.missing)}</p></div>${reviewGapsMarkup(q)}<div class="mapping-actions"><button class="secondary-btn" id="returnSource">Return to page</button></div><details class="proof"><summary>Source proof</summary><p>${escapeHtml(q.proof)}</p></details></section>`;
 }
 
 function bindQuestionEvents(q,a){
